@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+<title>Bilhetes Estoril Open</title>
+
+<!-- iOS: abrir em modo standalone (sem barra do Safari) e ícone próprio -->
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="Bilhetes Estoril" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="theme-color" content="#0F1720" />
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='38' fill='%230F1720'/%3E%3Ccircle cx='90' cy='78' r='38' fill='none' stroke='%23C1502E' stroke-width='7'/%3E%3Cline x1='90' y1='40' x2='90' y2='116' stroke='%23C1502E' stroke-width='4'/%3E%3Cline x1='52' y1='78' x2='128' y2='78' stroke='%23C1502E' stroke-width='4'/%3E%3Ctext x='90' y='150' font-family='Georgia,serif' font-size='22' fill='%23D4A73A' text-anchor='middle'%3EEstoril%3C/text%3E%3C/svg%3E" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='38' fill='%230F1720'/%3E%3Ccircle cx='90' cy='78' r='38' fill='none' stroke='%23C1502E' stroke-width='7'/%3E%3C/svg%3E" />
+
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    background: #F5F4F1;
+    color: #292524;
+    padding-bottom: 60px;
+  }
+  .serif { font-family: Georgia, "Times New Roman", serif; }
+
+  header {
+    background: #0F1720;
+    color: #fff;
+    padding: 32px 20px 22px;
+    border-radius: 0 0 24px 24px;
+    box-shadow: 0 4px 14px rgba(0,0,0,.15);
+  }
+  header .eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: #C1502E;
+    font-weight: 600;
+    margin: 0 0 4px;
+  }
+  header h1 { font-size: 22px; margin: 0 0 16px; font-weight: 400; }
+
+  .scoreboard { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .score {
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 12px;
+    padding: 10px 6px;
+    text-align: center;
+  }
+  .score .num { font-size: 24px; line-height: 1; font-family: Georgia, serif; }
+  .score .lbl { font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255,255,255,.5); margin-top: 4px; }
+
+  .filters {
+    display: flex; gap: 8px; padding: 16px 20px 0;
+    overflow-x: auto;
+  }
+  .filter-btn {
+    flex-shrink: 0;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid #E7E5E4;
+    background: #fff;
+    color: #78716C;
+  }
+  .filter-btn.active { background: #0F1720; color: #fff; border-color: #0F1720; }
+
+  .days { padding: 18px 20px 0; }
+  .day-block { margin-bottom: 20px; }
+  .day-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; padding: 0 4px; flex-wrap: wrap; }
+  .day-head .date { font-size: 18px; }
+  .day-head .weekday { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #A8A29E; }
+  .round-tag {
+    font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;
+    color: #8B3A20; background: #F3E4DC; padding: 2px 8px; border-radius: 999px;
+  }
+
+  .session-card { background: #fff; border: 1px solid #E7E5E4; border-radius: 16px; overflow: hidden; margin-bottom: 12px; }
+  .session-title {
+    display: flex; align-items: center; gap: 6px;
+    padding: 10px 16px;
+    font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .session-title.dia { background: #F3E4DC; color: #8B3A20; }
+  .session-title.noite { background: #1B2340; color: #fff; }
+
+  .slot { padding: 12px 16px; border-top: 1px solid #F5F4F1; }
+  .slot-row { display: flex; align-items: center; gap: 10px; }
+  .slot-icon {
+    width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; border: 1px solid #E7E5E4; background: #FAFAF9; color: #A8A29E;
+  }
+  .slot-icon.vip { background: #FBF0D9; border-color: #D4A73A; color: #8A6A15; }
+
+  .slot-main { flex: 1; min-width: 0; background: none; border: none; text-align: left; padding: 0; font: inherit; color: inherit; }
+  .slot-main .name { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .slot-main .empty { font-size: 12px; color: #A8A29E; }
+
+  .status-btn {
+    flex-shrink: 0; font-size: 11px; font-weight: 500;
+    padding: 5px 11px; border-radius: 999px; border: 1px solid;
+  }
+  .status-btn.Livre { background: #F5F5F4; color: #A8A29E; border-color: #E7E5E4; }
+  .status-btn.Atribuido { background: #FFFBEB; color: #B45309; border-color: #FCD34D; }
+  .status-btn.Confirmado { background: #ECFDF5; color: #047857; border-color: #6EE7B7; }
+
+  .slot-fields { margin-top: 10px; padding-left: 42px; display: flex; flex-direction: column; gap: 6px; }
+  .field-row {
+    display: flex; align-items: center; gap: 8px;
+    background: #FAFAF9; border: 1px solid #E7E5E4; border-radius: 8px; padding: 6px 10px;
+  }
+  .field-row span.ic { color: #A8A29E; font-size: 13px; }
+  .field-row input {
+    flex: 1; border: none; outline: none; background: transparent; font-size: 13.5px; font-family: inherit;
+  }
+
+  .save-note {
+    position: fixed; bottom: 14px; right: 16px;
+    font-size: 11px; color: #A8A29E; background: #F5F4F1cc; padding: 4px 8px; border-radius: 8px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <p class="eyebrow">Millennium Estoril Open · 2026</p>
+  <h1 class="serif">Bilhetes de convidado</h1>
+  <div class="scoreboard">
+    <div class="score"><div class="num" id="sc-total">0</div><div class="lbl">Total</div></div>
+    <div class="score"><div class="num" id="sc-given" style="color:#D4A73A">0</div><div class="lbl">Atribuídos</div></div>
+    <div class="score"><div class="num" id="sc-conf" style="color:#4ADE80">0</div><div class="lbl">Confirmados</div></div>
+  </div>
+</header>
+
+<div class="filters" id="filters"></div>
+<div class="days" id="days"></div>
+<div class="save-note" id="save-note">guardado</div>
+
+<script>
+const DIAS_PT = {Saturday:"Sábado",Sunday:"Domingo",Monday:"Segunda",Tuesday:"Terça",Wednesday:"Quarta",Thursday:"Quinta",Friday:"Sexta"};
+const NIGHT_START = "2026-07-22";
+const FINAL_DAY = "2026-07-26";
+const ROUND_LABELS = {"2026-07-24":"Quartos de Final","2026-07-25":"Meia Final","2026-07-26":"Final"};
+const SLOT_DEFS = {Normal:4, VIP:2};
+const STATUS_ORDER = ["Livre","Atribuido","Confirmado"];
+const STATUS_LABEL = {Livre:"Livre", Atribuido:"Atribuído", Confirmado:"Confirmado"};
+const STORAGE_KEY = "estoril-2026-tickets";
+
+function buildDates(){
+  const dates = [];
+  for(let d=18; d<=26; d++){
+    const iso = `2026-07-${String(d).padStart(2,"0")}`;
+    const wd = new Date(iso+"T12:00:00").toLocaleDateString("en-US",{weekday:"long"});
+    const sessions = (iso >= NIGHT_START && iso !== FINAL_DAY) ? ["Dia","Noite"] : ["Dia"];
+    dates.push({iso, day:d, weekday:DIAS_PT[wd], sessions, round:ROUND_LABELS[iso]});
+  }
+  return dates;
+}
+const DATES = buildDates();
+
+function slotId(iso, sess, tipo, n){ return `${iso}__${sess}__${tipo}__${n}`; }
+
+function loadData(){
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch(e){ return {}; }
+}
+function saveData(data){
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    const n = document.getElementById("save-note");
+    n.textContent = "guardado";
+  } catch(e){ console.error("Falha ao guardar", e); }
+}
+
+let DATA = loadData();
+let FILTER = "Todos";
+let OPEN_SLOT = null;
+
+function cycleStatus(id){
+  const current = (DATA[id] && DATA[id].status) || "Livre";
+  const idx = STATUS_ORDER.indexOf(current);
+  const next = STATUS_ORDER[(idx+1) % STATUS_ORDER.length];
+  DATA[id] = { ...(DATA[id]||{}), status: next };
+  saveData(DATA);
+  render();
+}
+function updateField(id, key, value){
+  DATA[id] = { ...(DATA[id]||{}), [key]: value };
+  saveData(DATA);
+}
+function toggleOpen(id){
+  OPEN_SLOT = (OPEN_SLOT === id) ? null : id;
+  render();
+}
+function setFilter(f){
+  FILTER = f;
+  render();
+}
+
+function computeTotals(){
+  let total=0, given=0, conf=0;
+  DATES.forEach(d => d.sessions.forEach(sess => {
+    Object.entries(SLOT_DEFS).forEach(([tipo, count]) => {
+      for(let n=1; n<=count; n++){
+        total++;
+        const st = (DATA[slotId(d.iso, sess, tipo, n)] || {}).status;
+        if(st === "Atribuido" || st === "Confirmado") given++;
+        if(st === "Confirmado") conf++;
+      }
+    });
+  }));
+  return {total, given, conf};
+}
+
+function render(){
+  const t = computeTotals();
+  document.getElementById("sc-total").textContent = t.total;
+  document.getElementById("sc-given").textContent = t.given;
+  document.getElementById("sc-conf").textContent = t.conf;
+
+  const filtersEl = document.getElementById("filters");
+  filtersEl.innerHTML = "";
+  ["Todos","Livre","Atribuido","Confirmado"].forEach(f => {
+    const btn = document.createElement("button");
+    btn.className = "filter-btn" + (FILTER===f ? " active" : "");
+    btn.textContent = f === "Atribuido" ? "Atribuído" : f;
+    btn.onclick = () => setFilter(f);
+    filtersEl.appendChild(btn);
+  });
+
+  const daysEl = document.getElementById("days");
+  daysEl.innerHTML = "";
+
+  DATES.forEach(d => {
+    const dayBlock = document.createElement("div");
+    dayBlock.className = "day-block";
+
+    const head = document.createElement("div");
+    head.className = "day-head";
+    head.innerHTML = `<span class="date serif">${d.day} jul</span><span class="weekday">${d.weekday}</span>` +
+      (d.round ? `<span class="round-tag">${d.round}</span>` : "");
+    dayBlock.appendChild(head);
+
+    d.sessions.forEach(sess => {
+      const card = document.createElement("div");
+      card.className = "session-card";
+
+      const title = document.createElement("div");
+      title.className = "session-title " + (sess === "Noite" ? "noite" : "dia");
+      title.textContent = (sess === "Noite" ? "🌙 " : "☀️ ") + "Sessão de " + sess;
+      card.appendChild(title);
+
+      Object.entries(SLOT_DEFS).forEach(([tipo, count]) => {
+        for(let n=1; n<=count; n++){
+          const id = slotId(d.iso, sess, tipo, n);
+          const slot = DATA[id] || {};
+          const status = slot.status || "Livre";
+          if(FILTER !== "Todos" && status !== FILTER) continue;
+
+          const row = document.createElement("div");
+          row.className = "slot";
+
+          const isOpen = OPEN_SLOT === id;
+          const guestLabel = slot.guest ? ` — ${slot.guest}` : "";
+          const emptyLabel = slot.guest ? "" : `<div class="empty">Sem convidado atribuído</div>`;
+
+          row.innerHTML = `
+            <div class="slot-row">
+              <div class="slot-icon ${tipo==='VIP'?'vip':''}">${tipo==='VIP' ? '👑' : '🎟️'}</div>
+              <button class="slot-main" data-open="${id}">
+                <div class="name">${tipo} ${n}${guestLabel}</div>
+                ${emptyLabel}
+              </button>
+              <button class="status-btn ${status}" data-cycle="${id}">${STATUS_LABEL[status]}</button>
+            </div>
+            ${isOpen ? `
+            <div class="slot-fields">
+              <div class="field-row"><span class="ic">👤</span><input type="text" placeholder="Nome do convidado" data-id="${id}" data-key="guest" value="${slot.guest||''}"></div>
+              <div class="field-row"><span class="ic">📞</span><input type="text" placeholder="Contacto" data-id="${id}" data-key="contact" value="${slot.contact||''}"></div>
+              <div class="field-row"><span class="ic">📝</span><input type="text" placeholder="Notas" data-id="${id}" data-key="notes" value="${slot.notes||''}"></div>
+            </div>` : ""}
+          `;
+          card.appendChild(row);
+        }
+      });
+
+      dayBlock.appendChild(card);
+    });
+
+    daysEl.appendChild(dayBlock);
+  });
+
+  // event listeners
+  daysEl.querySelectorAll("[data-open]").forEach(el => {
+    el.addEventListener("click", () => toggleOpen(el.getAttribute("data-open")));
+  });
+  daysEl.querySelectorAll("[data-cycle]").forEach(el => {
+    el.addEventListener("click", () => cycleStatus(el.getAttribute("data-cycle")));
+  });
+  daysEl.querySelectorAll("input[data-id]").forEach(el => {
+    el.addEventListener("input", () => {
+      updateField(el.getAttribute("data-id"), el.getAttribute("data-key"), el.value);
+    });
+    el.addEventListener("click", (e) => e.stopPropagation());
+  });
+}
+
+render();
+</script>
+</body>
+</html>
